@@ -25,7 +25,7 @@ function onOpen()
       .addToUi();
 }
 
-//Display prompt  displayed when updating a specific row
+//Display prompt displayed when updating a specific row
 function showUpdateSpecificRowPrompt_()
 {
   var ui = SpreadsheetApp.getUi();
@@ -50,7 +50,7 @@ function showManualPrompt_()
 {
   var textDescription = "This script will generate a sheet which will automatically keep item prices up to date. Click the 'Generate price sheet' button in the RuneScape Price Updater dropdown menu to get started.";
   textDescription += "\nThen, simply add the names and IDs of the items you wish to track to the " + priceSheetName + " sheet, and the script will handle the rest.";
-  var textHowToRefer = "To get the price of an item into another sheet, simply set the text of cell you want to fill with '=" + priceSheetName + "!D2'.";
+  var textHowToRefer = "To get the price of an item into another sheet, simply set the text of the cell you want to fill with '=" + priceSheetName + "!D2'.";
   textHowToRefer += " Replace the number 2 to reflect the row that corresponds to the item of interest.";
   var textItemID = "To get the ID of an item:";
   textItemID += "\n- Go to the RuneScape homepage (www.runescape.com)";
@@ -131,7 +131,7 @@ function generatePriceUpdateSheet()
     }
     
     //Creates triggers
-    ScriptApp.newTrigger("updateRowsBatch" + batch).timeBased().everyHours(1).create();
+    ScriptApp.newTrigger("updateRowsBatch" + batch).timeBased().everyHours(2).create();
   }
 }
 
@@ -194,4 +194,4 @@ function isNumber_(input)
   return true;
 }
 
-var version = "1.0";
+var version = "1.1";
