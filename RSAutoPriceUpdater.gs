@@ -50,17 +50,21 @@ function showManualPrompt_()
 {
   var textDescription = "This script will generate a sheet which will automatically keep item prices up to date. Click the 'Generate price sheet' button in the RuneScape Price Updater dropdown menu to get started.";
   textDescription += "\nThen, simply add the names and IDs of the items you wish to track to the " + priceSheetName + " sheet, and the script will handle the rest.";
+  
   var textHowToRefer = "To get the price of an item into another sheet, simply set the text of the cell you want to fill with '=" + priceSheetName + "!D2'.";
   textHowToRefer += " Replace the number 2 to reflect the row that corresponds to the item of interest.";
+  
   var textItemID = "To get the ID of an item:";
   textItemID += "\n- Go to the RuneScape homepage (www.runescape.com)";
   textItemID += "\n- Go to the Grand Exchange part of the website";
   textItemID += "\n- Search for the item you're interested in, and go to that items' page";
   textItemID += "\n- The item's ID will be the last part of the URL";
   textItemID += "\n- For example, the Cabbage URL is 'http://services.runescape.com/m=itemdb_rs/Cabbage/viewitem?obj=1965', so the ID for Cabbage is 1965.";
+  
   var textOutdated = "Important: Sometimes, items will not update. This is normal, and is caused by Jagex's API being unreliable. In the worst case, some item prices might be a few hours outdated.";
   textOutdated += "\nIf you're first setting this up, give it about a day to ensure all items are updated, or manually insert the prices into the sheet.";
   textOutdated += "\nThe 'Last succesful update' and 'Last attempted update' columns can give you an idea of how outdated an item's price is.";
+  
   var ui = SpreadsheetApp.getUi();
   ui.alert("RuneScape Price Updater - Manual", textDescription + "\n\n" + textHowToRefer + "\n\n" + textItemID + "\n\n" + textOutdated, ui.ButtonSet.OK);
 }
@@ -68,9 +72,14 @@ function showManualPrompt_()
 //Prompt displayed when updating a specific row
 function showAboutPrompt_()
 {
+  var newestVersionNumber = getNewestVersionNumber_();
+  var textVersion = "Version " + version_ + (newestVersionNumber == version_ ? "" : " (A new version is available on GitHub, version " + newestVersionNumber + ")");
   var textContact = "This script was written by Zenyl. If you have any questions or feedback, feel free to send me a message on Reddit (/u/zenyl) or in-game (RSN Zenyl).";
+  var textDisclaimer = "Disclaimer: I am not affiliated with Jagex in any way. This script is developed for use with their public APIs.";
+  var textGithub = "Github repository: https://github.com/DevAndersen/RSAutoPriceUpdater";
+  var textLicense = "License: GNU General Public License 3.";
   var ui = SpreadsheetApp.getUi();
-  ui.alert("RuneScape Price Updater - About", textContact, ui.ButtonSet.OK);
+  ui.alert("RuneScape Price Updater - About", textVersion + "\n\n" + textContact + "\n\n" + textDisclaimer + "\n\n" + textGithub + "\n\n" + textLicense, ui.ButtonSet.OK);
 }
 
 function generatePriceUpdateSheet()
@@ -90,7 +99,7 @@ function generatePriceUpdateSheet()
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = spreadsheet.insertSheet(priceSheetName);
   
-  //Format sheet
+  //Format sheet and cells
   sheet.deleteColumns(1, 25);
   
   for(row = 1; row <= titles.length; row++)
@@ -106,16 +115,16 @@ function generatePriceUpdateSheet()
   sheet.autoResizeColumn(5);
   sheet.autoResizeColumn(6);
   sheet.deleteRows(499, 501);
+  sheet.setColumnWidth(4, 107);
   
   //Fill data rows
   for(item = 2; item <= 499; item++)
   {
     sheet.setRowHeight(item, 33);
     sheet.getRange(item, 1).setValue("=IMAGE(\"http://services.runescape.com/m=itemdb_rs/obj_sprite.gif?id=\" & B" + item + ")");
-    sheet.getRange(item, 4).setNumberFormat("#,##0 gp")
+    sheet.getRange(item, 4).setNumberFormat("#,##0 gp");
+    sheet.getRange(item, 2).setHorizontalAlignment("center");
   }
-  
-  sheet.setColumnWidth(4, 107);
   
   //Set up triggers
   for(batch = 1; batch <= 10; batch++)
@@ -133,6 +142,9 @@ function generatePriceUpdateSheet()
     //Creates triggers
     ScriptApp.newTrigger("updateRowsBatch" + batch).timeBased().everyHours(2).create();
   }
+  
+  var ui = SpreadsheetApp.getUi();
+  ui.alert("Setup complete", "The script and auto-updaters have succesfully been set up. You can now start adding items, which will automatically be kept up to date.", ui.ButtonSet.OK);
 }
 
 //Trigger functions
@@ -194,4 +206,19 @@ function isNumber_(input)
   return true;
 }
 
-var version = "1.1";
+function getNewestVersionNumber_()
+{
+  var url = "https://raw.githubusercontent.com/DevAndersen/RSAutoPriceUpdater/master/RSAutoPriceUpdater.gs";
+  var content = UrlFetchApp.fetch(url);
+  var lines = ("" + content).split("\n");
+  for(i = 0; i < lines.length; i++)
+  {
+    if(lines[i].indexOf("var version_ = ") != -1 && lines[i].indexOf("indexOf") == -1)
+    {
+      return ("" + lines[i]).split("\"")[1];
+    }
+  }
+  return "[Error retrieving version number from GitHub]";
+}
+
+var version_ = "1.2";
